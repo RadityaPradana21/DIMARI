@@ -1,0 +1,4 @@
+[deploy]
+# Generate a valid APP_KEY before every deployment if one is not already set.
+# This prevents "Unsupported cipher or incorrect key length" errors on first boot.
+preDeploy = "php artisan app:ensure-key"
