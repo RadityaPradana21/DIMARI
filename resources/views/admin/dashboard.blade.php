@@ -245,7 +245,7 @@ if ($r->score < 50) $dist['0-49']++;
                                 <th>User</th>
                                 <th>Modul</th>
                                 <th>Skor</th>
-                                <th>Minggu</th>
+                                <th>Pekan</th>
                                 <th>Dikerjakan</th>
                             </tr>
                         </thead>
@@ -263,8 +263,12 @@ if ($r->score < 50) $dist['0-49']++;
                                         {{ $result->score }}
                                     </span>
                                 </td>
-                                <td class="text-muted">
-                                    {{ \Carbon\Carbon::parse($result->week_start)->format('d M Y') }}
+                                <td class="text-muted" style="line-height: 1.3;">
+                                    @php
+                                        $wStart = \Carbon\Carbon::parse($result->week_start);
+                                        $wEnd = $wStart->copy()->addDays(6);
+                                    @endphp
+                                    {!! $wStart->format('j M Y') . ' - <br>' . $wEnd->format('j M Y') !!}
                                 </td>
                                 <td class="text-muted">{{ $result->created_at->format('d M Y H:i') }}</td>
                             </tr>

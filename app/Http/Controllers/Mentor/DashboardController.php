@@ -53,7 +53,54 @@ class DashboardController extends Controller
             $editMod = Module::find((int) request('edit_mod'));
         }
 
-        $quizResults = QuizResult::with(['user', 'module'])->latest()->get();
+        // Hasil Quiz (dengan Search, Filter, Sort, Pagination)
+        $resQ      = trim((string) request('res_q', ''));
+        $resModule = (int) request('res_module', 0);
+        $resSort   = request('res_sort', 'newest');
+        
+        $qrQuery = QuizResult::with(['user', 'module']);
+
+        if ($resModule > 0) {
+            $qrQuery->where('quiz_results.module_id', $resModule);
+        }
+
+        if ($resQ !== '') {
+            $qrQuery->whereHas('user', function($q) use ($resQ) {
+                $q->where('full_name', 'like', "%{$resQ}%")
+                  ->orWhere('username', 'like', "%{$resQ}%")
+                  ->orWhere('email', 'like', "%{$resQ}%");
+            });
+        }
+
+        switch ($resSort) {
+            case 'oldest':
+                $qrQuery->orderBy('quiz_results.created_at', 'asc');
+                break;
+            case 'score_asc':
+                $qrQuery->orderBy('quiz_results.score', 'asc')->orderBy('quiz_results.created_at', 'desc');
+                break;
+            case 'score_desc':
+                $qrQuery->orderBy('quiz_results.score', 'desc')->orderBy('quiz_results.created_at', 'desc');
+                break;
+            case 'user_asc':
+                $qrQuery->join('users', 'quiz_results.user_id', '=', 'users.id')
+                        ->orderBy('users.username', 'asc')
+                        ->orderBy('users.full_name', 'asc')
+                        ->select('quiz_results.*');
+                break;
+            case 'user_desc':
+                $qrQuery->join('users', 'quiz_results.user_id', '=', 'users.id')
+                        ->orderBy('users.username', 'desc')
+                        ->orderBy('users.full_name', 'desc')
+                        ->select('quiz_results.*');
+                break;
+            case 'newest':
+            default:
+                $qrQuery->orderBy('quiz_results.created_at', 'desc');
+                break;
+        }
+
+        $quizResults = $qrQuery->paginate(15)->withQueryString();
 
         return view('mentor.dashboard', compact(
             'tab', 'modules', 'selectedMod',

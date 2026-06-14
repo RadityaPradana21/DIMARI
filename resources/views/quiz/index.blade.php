@@ -157,35 +157,110 @@
             </div>
 
             <style>
-            .score-hud{position:relative;display:inline-flex;flex-direction:column;align-items:center;margin-left:1rem;padding:0.35rem 0.6rem;border:1px solid rgba(255,255,255,0.06);border-radius:6px;background:rgba(255,255,255,0.02)}
-            .score-label{font-size:.7rem;color:var(--text-muted)}
-            .score-value{font-size:1.05rem;font-weight:700;margin-top:.15rem;color:var(--primary,#8b5cf6)}
+            .score-hud {
+                position: relative;
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                margin-left: 1rem;
+                padding: 0.35rem 0.8rem;
+                border: 1px solid rgba(0, 204, 255, 0.15);
+                border-radius: 8px;
+                background: rgba(10, 10, 21, 0.6);
+                box-shadow: 0 0 10px rgba(0, 204, 255, 0.05);
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+            .score-hud.pop-active {
+                border-color: rgba(0, 240, 255, 0.6);
+                box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            }
+            .score-label {
+                font-size: .7rem;
+                color: var(--text-muted);
+                letter-spacing: 0.5px;
+            }
+            .score-value {
+                font-size: 1.15rem;
+                font-weight: 800;
+                margin-top: .15rem;
+                color: #00f0ff; /* Solid light blue */
+                display: inline-block;
+                transition: transform 0.15s ease;
+            }
+
+            .score-value.color-shift-active {
+                background: linear-gradient(225deg, #00f0ff 0%, #0066ff 25%, #8b5cf6 50%, #00f0ff 75%, #0066ff 100%);
+                background-size: 400% 400%;
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                animation: shiftNeon 1.5s linear forwards;
+            }
+            
+            @keyframes shiftNeon {
+                0% { background-position: 100% 100%; }
+                20% { background-position: 66% 66%; } /* 0.3s fast */
+                40% { background-position: 33% 33%; } /* 0.3s fast */
+                100% { background-position: 0% 0%; } /* 0.9s slower */
+            }
+            
+            .score-value.pop-bounce {
+                animation: scorePop 0.15s ease-out;
+            }
+            
+            @keyframes scorePop {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.4); }
+                100% { transform: scale(1); }
+            }
 
             /* +10 burst */
-            .points-burst{
-                position:absolute;left:100%;top:50%;transform:translate(8px,-50%);
-                background:var(--primary,#8b5cf6);color:#fff;padding:0.15rem 0.45rem;border-radius:6px;font-weight:700;font-size:0.9rem;
-                pointer-events:none;box-shadow:0 8px 20px rgba(139,92,246,0.18);opacity:0;
-                animation:burst 1900ms cubic-bezier(.22,.9,.35,1) forwards;
+            .points-burst {
+                position: absolute;
+                left: 100%;
+                top: 50%;
+                transform: translate(8px, -50%);
+                background: linear-gradient(45deg, #00f0ff, #0066ff);
+                color: #fff;
+                padding: 0.15rem 0.55rem;
+                border-radius: 6px;
+                font-weight: 800;
+                font-size: 0.95rem;
+                pointer-events: none;
+                box-shadow: 0 0 12px rgba(0, 204, 255, 0.4);
+                opacity: 0;
+                animation: burst 1200ms cubic-bezier(.22,.9,.35,1) forwards;
             }
-            @keyframes burst{
-                0% { transform:translate(8px,0) scale(1); opacity:1 }
-                30% { transform:translate(14px,-8px) scale(1.3); opacity:1 }
-                100% { transform:translate(18px,-28px) scale(1); opacity:0 }
+            @keyframes burst {
+                0% { transform: translate(8px, 0) scale(1); opacity: 1 }
+                30% { transform: translate(14px, -8px) scale(1.3); opacity: 1 }
+                100% { transform: translate(18px, -28px) scale(1); opacity: 0 }
             }
 
             /* Heart / nyawa animations */
-            .heart{display:inline-block;transition:transform .28s ease,opacity .28s ease;font-size:1.05rem}
-            .heart-lost{animation:heartPop 700ms forwards}
-            @keyframes heartPop{
-                0% { transform:scale(1); opacity:1 }
-                40% { transform:scale(1.45) rotate(-8deg); opacity:1 }
-                100% { transform:scale(0.18) rotate(-28deg); opacity:0.15 }
+            .heart {
+                display: inline-block;
+                transition: transform .28s ease, opacity .28s ease;
+                font-size: 1.05rem;
+            }
+            .heart-lost {
+                animation: heartPop 700ms forwards;
+            }
+            @keyframes heartPop {
+                0% { transform: scale(1); opacity: 1 }
+                40% { transform: scale(1.45) rotate(-8deg); opacity: 1 }
+                100% { transform: scale(0.18) rotate(-28deg); opacity: 0.15 }
             }
 
             /* Option correct feedback */
-            .opt-correct-feedback{box-shadow:0 8px 30px rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35)}
-            .opt-wrong-feedback{box-shadow:0 8px 20px rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.12)}
+            .opt-correct-feedback {
+                box-shadow: 0 8px 30px rgba(34, 197, 94, 0.12);
+                border: 1px solid rgba(34, 197, 94, 0.35);
+            }
+            .opt-wrong-feedback {
+                box-shadow: 0 8px 20px rgba(239, 68, 68, 0.06);
+                border: 1px solid rgba(239, 68, 68, 0.12);
+            }
             </style>
 
             <form id="quizForm">
@@ -336,7 +411,18 @@ function selectOption(btn) {
 
 function updatePoints() {
     const el = document.getElementById('scoreValue');
-    if (el) el.textContent = points;
+    if (el) {
+        el.textContent = points;
+        el.classList.remove('pop-bounce');
+        void el.offsetWidth; // trigger reflow
+        el.classList.add('pop-bounce');
+    }
+    const hud = document.querySelector('.score-hud');
+    if (hud) {
+        hud.classList.remove('pop-active');
+        void hud.offsetWidth; // trigger reflow
+        hud.classList.add('pop-active');
+    }
 }
 
 // Animated points queue to increment numbers one-by-one
@@ -365,6 +451,10 @@ function processPointsQueue(){
     processingPoints = true;
     const target = points + inc;
     const stepMs = 150; // 0.15s per increment
+    
+    const el = document.getElementById('scoreValue');
+    if (el) el.classList.add('color-shift-active');
+
     function step(){
         if(points < target){
             points++;
@@ -372,6 +462,11 @@ function processPointsQueue(){
             setTimeout(step, stepMs);
         } else {
             processingPoints = false;
+            // Clear animation state at the end
+            if (el) el.classList.remove('color-shift-active');
+            const hud = document.querySelector('.score-hud');
+            if (hud) hud.classList.remove('pop-active');
+            
             if(pointsQueue.length > 0) processPointsQueue();
         }
     }

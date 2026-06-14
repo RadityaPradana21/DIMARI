@@ -29,38 +29,127 @@
 
     @if($tab === 'results')
     {{-- ===== TAB: HASIL QUIZ ===== --}}
+        @php
+            if (!function_exists('highlightSearch')) {
+                function highlightSearch($text, $query) {
+                    if (empty($query)) return e($text);
+                    $escaped = preg_quote($query, '/');
+                    $escapedText = e($text);
+                    return preg_replace('/(' . $escaped . ')/i', '<mark class="highlight-search">$1</mark>', $escapedText);
+                }
+            }
+        @endphp
+        
         {{-- Tabel --}}
         <div class="mentor-section">
-            <h3 class="section-title">Daftar Hasil Quiz</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom: 1rem;">
+                <h3 class="section-title" style="margin-bottom:0;">Daftar Hasil Quiz</h3>
+                
+                <form method="GET" action="{{ route('mentor.index') }}" style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                    <input type="hidden" name="tab" value="results">
+                    <input type="hidden" name="res_sort" value="{{ request('res_sort', 'newest') }}">
+                    
+                    {{-- Search Input --}}
+                    <input type="search" name="res_q" value="{{ request('res_q') }}" placeholder="Cari user/email..." class="form-input" style="width:180px;">
+                    
+                    {{-- Module Filter --}}
+                    <select name="res_module" class="form-input" style="width:180px;">
+                        <option value="">Semua Modul</option>
+                        @foreach($modules as $mod)
+                            <option value="{{ $mod->id }}" {{ request('res_module') == $mod->id ? 'selected' : '' }}>
+                                {{ $mod->title }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <button class="btn-primary">Cari</button>
+                    @if(request('res_q') || request('res_module') || request('res_sort'))
+                        <a href="{{ route('mentor.index', ['tab' => 'results']) }}" class="btn-cancel" style="padding: 0.4rem 0.8rem; font-size:0.85rem;">Reset</a>
+                    @endif
+                </form>
+            </div>
+            
             <div class="data-table-wrap">
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>User</th>
+                            <th>
+                                <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+                                    <span>User</span>
+                                    @php
+                                        $currUserSort = request('res_sort');
+                                        $nextUserSort = $currUserSort === 'user_asc' ? 'user_desc' : 'user_asc';
+                                        $userLabel = $currUserSort === 'user_desc' ? 'Z -> A' : 'A -> Z';
+                                        $userActive = in_array($currUserSort, ['user_asc', 'user_desc']);
+                                    @endphp
+                                    <a href="{{ request()->fullUrlWithQuery(['res_sort' => $nextUserSort]) }}" class="sort-btn {{ $userActive ? 'active' : '' }}">
+                                        {{ $userLabel }}
+                                    </a>
+                                </div>
+                            </th>
                             <th>Modul</th>
-                            <th>Skor</th>
-                            <th>Minggu</th>
-                            <th>Dikerjakan</th>
+                            <th>
+                                <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+                                    <span>Skor</span>
+                                    @php
+                                        $currScoreSort = request('res_sort');
+                                        $nextScoreSort = $currScoreSort === 'score_asc' ? 'score_desc' : 'score_asc';
+                                        $scoreLabel = $currScoreSort === 'score_asc' ? '0 -> 100' : '100 -> 0';
+                                        $scoreActive = in_array($currScoreSort, ['score_asc', 'score_desc']);
+                                    @endphp
+                                    <a href="{{ request()->fullUrlWithQuery(['res_sort' => $nextScoreSort]) }}" class="sort-btn {{ $scoreActive ? 'active' : '' }}">
+                                        {{ $scoreLabel }}
+                                    </a>
+                                </div>
+                            </th>
+                            <th>Pekan</th>
+                            <th>
+                                <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+                                    <span>Dikerjakan</span>
+                                    @php
+                                        $currDateSort = request('res_sort');
+                                        $nextDateSort = $currDateSort === 'oldest' ? 'newest' : 'oldest';
+                                        $dateLabel = $currDateSort === 'oldest' ? 'terlama -> terbaru' : 'terbaru -> terlama';
+                                        $dateActive = in_array($currDateSort, ['newest', 'oldest']) || empty($currDateSort);
+                                    @endphp
+                                    <a href="{{ request()->fullUrlWithQuery(['res_sort' => $nextDateSort]) }}" class="sort-btn {{ $dateActive ? 'active' : '' }}">
+                                        {{ $dateLabel }}
+                                    </a>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($quizResults as $result)
                             @php
-                                $sc = $result->score >= 90 ? 'perfect'
-                                    : ($result->score >= 70 ? 'good' : 'low');
+                                $sc = $result->score >= 90 ? 'good'
+                                    : ($result->score >= 70 ? 'perfect' : 'low');
                             @endphp
                             <tr>
-                                <td>{{ $result->user->username ?? '-' }}</td>
+                                <td>
+                                    <strong>{!! highlightSearch($result->user->name ?? $result->user->username ?? '-', request('res_q')) !!}</strong><br>
+                                    <small class="text-muted">{!! highlightSearch($result->user->email ?? '-', request('res_q')) !!}</small>
+                                </td>
                                 <td>{{ $result->module->title ?? 'Modul '.$result->module_id }}</td>
                                 <td><span class="score-badge {{ $sc }}">{{ $result->score }}</span></td>
-                                <td class="text-muted">{{ \Carbon\Carbon::parse($result->week_start)->format('d M Y') }}</td>
+                                <td class="text-muted" style="line-height: 1.3;">
+                                    @php
+                                        $wStart = \Carbon\Carbon::parse($result->week_start);
+                                        $wEnd = $wStart->copy()->addDays(6);
+                                    @endphp
+                                    {!! $wStart->format('j M Y') . ' - <br>' . $wEnd->format('j M Y') !!}
+                                </td>
                                 <td class="text-muted">{{ $result->created_at->format('d M Y H:i') }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5"><div class="empty-state">Belum ada hasil quiz.</div></td></tr>
+                            <tr><td colspan="5"><div class="empty-state">Belum ada hasil quiz atau data tidak ditemukan.</div></td></tr>
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            <div style="margin-top:1rem;">
+                {{ $quizResults->links() }}
             </div>
         </div>
 
@@ -439,6 +528,68 @@
 .wysiwyg-editor blockquote { border-left: 3px solid var(--primary); padding: .5rem 1rem; margin: .8rem 0; background: rgba(255,255,255,.03); border-radius: 0 6px 6px 0; }
 .wysiwyg-editor a { color: var(--primary); text-decoration: underline; }
 .wysiwyg-editor hr { border: none; border-top: 1px solid rgba(255,255,255,.15); margin: 1rem 0; }
+
+/* Custom styling for Dropdown / Select List */
+select.form-input {
+    background-color: #121225;
+    color: #e5e7eb;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+select.form-input option {
+    background-color: #121225;
+    color: #e5e7eb;
+    padding: 0.5rem;
+}
+
+select.form-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* Highlight Search Result */
+.highlight-search {
+    background-color: rgba(0, 204, 255, 0.25);
+    color: #00f0ff;
+    padding: 0 3px;
+    border-radius: 3px;
+    font-weight: 700;
+}
+
+/* Sorting Buttons in Table Headers */
+.sort-btn {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    font-weight: 600;
+    font-family: inherit;
+}
+
+.sort-btn:hover {
+    background: rgba(139, 92, 246, 0.25);
+    border-color: var(--primary);
+    color: #ffffff;
+}
+
+.sort-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+}
 </style>
 @endsection
 
