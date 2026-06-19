@@ -102,10 +102,10 @@
                         <a href="{{ route('forum.edit', $forum) }}" class="btn-edit" style="font-size:.75rem; margin-left:0.5rem;">✏️</a>
                         @endcan
                         @can('delete', $forum)
-                        <form method="POST" action="{{ route('forum.destroy', $forum) }}" style="display:inline;" onsubmit="return dimariConfirm(event, 'Hapus topik ini?')">
+                        <form method="POST" action="{{ route('forum.destroy', $forum) }}" style="display:inline;" onsubmit="return dimariConfirm(event, '{{ $forum->visible ? 'Sembunyikan topik ini?' : 'Tampilkan topik ini?' }}')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn-delete" style="font-size:.75rem; margin-left:0.25rem;">🗑</button>
+                            <button type="submit" class="btn-delete" style="font-size:.75rem; margin-left:0.25rem;">{{ $forum->visible ? '🔒' : '🔓' }}</button>
                         </form>
                         @endcan
                     </div>

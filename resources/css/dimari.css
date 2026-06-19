@@ -16,7 +16,7 @@
     --border: rgba(204, 0, 255, 0.2);
     --border2: rgba(0, 204, 255, 0.2);
     --text: #e0e0f0;
-    --text-muted: #7878aa;
+    --text-muted: #ffffff;
     --success: #00ff88;
     --error: #ff4466;
     --warning: #ffaa00;
@@ -376,7 +376,7 @@ strong { color: var(--primary); }
     box-shadow: 0 0 0 3px rgba(204, 0, 255, 0.1);
     background: rgba(255,255,255,0.07);
 }
-.form-input::placeholder { color: var(--text-muted); }
+.form-input::placeholder { color: #7878aa; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .form-actions { display: flex; gap: 1rem; align-items: center; margin-top: 1rem; }
 
@@ -584,7 +584,7 @@ strong { color: var(--primary); }
     outline: none;
     transition: all 0.2s;
 }
-.sidebar-search-input::placeholder { color: var(--text-muted); }
+.sidebar-search-input::placeholder { color: #7878aa; }
 .sidebar-search-input:focus {
     border-color: var(--primary);
     background: rgba(255,255,255,0.07);

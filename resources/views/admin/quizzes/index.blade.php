@@ -40,7 +40,7 @@
 
         <div style="display:flex; gap:0.5rem; align-items:center;">
             <a href="{{ route('admin.quizzes.create') }}" class="btn-primary">✚ Tambah Soal</a>
-            <span class="text-muted" style="font-size:0.8rem;">📌 Pengelolaan soal dilakukan oleh Mentor</span>
+            <span class="text-muted" style="font-size:0.8rem;">Pengelolaan soal dilakukan oleh Mentor</span>
         </div>
     </div>
 

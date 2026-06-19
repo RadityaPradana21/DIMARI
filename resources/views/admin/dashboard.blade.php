@@ -12,12 +12,11 @@ $barLabels[] = 'M'.$mid.': '.(\Illuminate\Support\Str::limit($moduleLabels[$mid]
 $barData[] = $avg;
 }
 
-$dist = ['0-49' => 0, '50-69' => 0, '70-89' => 0, '90-100' => 0];
+$dist = ['0-69' => 0, '70-89' => 0, '90-100' => 0];
 foreach ($quizResults as $r) {
-if ($r->score < 50) $dist['0-49']++;
-    elseif ($r->score < 70) $dist['50-69']++;
-        elseif ($r->score < 90) $dist['70-89']++;
-            else $dist['90-100']++;
+if ($r->score < 70) $dist['0-69']++;
+    elseif ($r->score < 90) $dist['70-89']++;
+        else $dist['90-100']++;
             }
             @endphp
             <div class="admin-container">
@@ -56,11 +55,20 @@ if ($r->score < 50) $dist['0-49']++;
 
             {{-- Tab: Users (tanpa tombol Tambah User) --}}
             <div id="tab-users" class="tab-content">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; gap:1rem;">
                     <span class="text-muted">{{ $users->count() }} user terdaftar</span>
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-left:auto;">
+                        <select id="usersRoleFilter" class="custom-select-native" onchange="adminFilter('usersTable', 'role', this.value)">
+                            <option value="">Semua Role</option>
+                            <option value="user">USER</option>
+                            <option value="mentor">MENTOR</option>
+                            <option value="admin">ADMIN</option>
+                        </select>
+                        <input id="usersSearch" class="form-input" placeholder="Cari username atau email..." style="width:260px;" oninput="adminSearch('usersTable', this.value)">
+                    </div>
                 </div>
                 <div class="data-table-wrap">
-                    <table class="data-table">
+                    <table class="data-table" id="usersTable">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -73,7 +81,7 @@ if ($r->score < 50) $dist['0-49']++;
                         </thead>
                         <tbody>
                             @forelse($users as $user)
-                            <tr>
+                            <tr data-role="{{ $user->role }}">
                                 <td class="text-muted" style="font-family:'Space Mono',monospace; font-size:0.8rem;">{{ $user->id }}</td>
                                 <td>{{ $user->username }}</td>
                                 <td>{{ $user->email }}</td>
@@ -111,12 +119,21 @@ if ($r->score < 50) $dist['0-49']++;
 
             {{-- Tab: Modul --}}
             <div id="tab-modules" class="tab-content" style="display:none;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; gap:0.5rem;">
                     <span class="text-muted">{{ $modules->count() }} modul tersedia</span>
-                    <a href="{{ route('admin.modules.create') }}" class="btn-primary">✚ Tambah Modul</a>
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-left:auto;">
+                        <select id="modulesFilter" class="custom-select-native" onchange="adminSearch('modulesTable', '')">
+                            <option value="">Semua Modul</option>
+                            @foreach($modules as $mod)
+                                <option value="{{ $mod->id }}">M{{ $mod->id }}: {{ $mod->title }}</option>
+                            @endforeach
+                        </select>
+                        <input id="modulesSearch" class="form-input" placeholder="Cari judul modul..." style="width:260px;" oninput="adminSearch('modulesTable', this.value)">
+                        <a href="{{ route('admin.modules.create') }}" class="btn-primary">✚ Tambah Modul</a>
+                    </div>
                 </div>
                 <div class="data-table-wrap">
-                    <table class="data-table">
+                    <table class="data-table" id="modulesTable">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -128,7 +145,7 @@ if ($r->score < 50) $dist['0-49']++;
                         </thead>
                         <tbody>
                             @forelse($modules as $mod)
-                            <tr>
+                            <tr data-module="{{ $mod->id }}">
                                 <td class="text-muted" style="font-family:'Space Mono',monospace; font-size:0.8rem;">{{ $mod->id }}</td>
                                 <td>{{ $mod->title }}</td>
                                 <td>
@@ -165,19 +182,18 @@ if ($r->score < 50) $dist['0-49']++;
 
             {{-- Tab: Soal Quiz (view-only, hapus kelola) --}}
             <div id="tab-quizzes" class="tab-content" style="display:none;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; gap:0.5rem;">
                     <span class="text-muted">{{ $questions->count() }} soal terdaftar</span>
-                    <span class="text-muted" style="font-size:0.8rem;">📌 Pengelolaan soal dilakukan oleh Mentor</span>
-                </div>
-
-                {{-- Filter per modul --}}
-                <div class="module-picker" style="margin-bottom:1rem;">
-                    <button class="mod-tab active" onclick="filterQuizByModule(0, this)">Semua Modul</button>
-                    @foreach($modules as $mod)
-                    <button class="mod-tab" onclick="filterQuizByModule({{ $mod->id }}, this)">
-                        M{{ $mod->id }}: {{ $mod->title }}
-                    </button>
-                    @endforeach
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-left:auto;">
+                        <select id="quizModuleFilter" class="custom-select-native" onchange="filterQuizByModule(parseInt(this.value), this)">
+                            <option value="0">Semua Modul</option>
+                            @foreach($modules as $mod)
+                                <option value="{{ $mod->id }}">M{{ $mod->id }}: {{ $mod->title }}</option>
+                            @endforeach
+                        </select>
+                        <input id="quizSearch" class="form-input" placeholder="Cari pertanyaan..." style="width:320px;" oninput="adminSearch('quizTable', this.value)">
+                        <span class="text-muted" style="font-size:0.8rem;">Pengelolaan soal dilakukan oleh Mentor</span>
+                    </div>
                 </div>
 
                 <div class="data-table-wrap">
@@ -238,8 +254,20 @@ if ($r->score < 50) $dist['0-49']++;
                     </div>
                 </div>
 
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; gap:0.5rem;">
+                    <div></div>
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-left:auto;">
+                        <select id="resultsModuleFilter" class="custom-select-native" onchange="adminFilter('resultsTable','module', this.value)">
+                            <option value="">Semua Modul</option>
+                            @foreach($modules as $mod)
+                                <option value="{{ $mod->id }}">M{{ $mod->id }}: {{ $mod->title }}</option>
+                            @endforeach
+                        </select>
+                        <input id="resultsSearch" class="form-input" placeholder="Cari username atau modul..." style="width:300px;" oninput="adminSearch('resultsTable', this.value)">
+                    </div>
+                </div>
                 <div class="data-table-wrap">
-                    <table class="data-table">
+                    <table class="data-table" id="resultsTable">
                         <thead>
                             <tr>
                                 <th>User</th>
@@ -312,12 +340,34 @@ if ($r->score < 50) $dist['0-49']++;
                     if (name === 'results') initCharts();
                 }
 
-                // Quiz filter per modul
-                function filterQuizByModule(moduleId, btn) {
-                    document.querySelectorAll('.mod-tab').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
+                // Quiz filter per modul (select-based)
+                function filterQuizByModule(moduleId, el) {
+                    // If called from a select element, no tab classes to toggle
                     document.querySelectorAll('#quizTable tbody tr').forEach(row => {
                         row.style.display = (moduleId === 0 || parseInt(row.dataset.module) === moduleId) ? '' : 'none';
+                    });
+                }
+
+                // Generic table search: tableId is the table's id, query is the search string
+                function adminSearch(tableId, query) {
+                    const q = (query || '').toLowerCase().trim();
+                    const table = document.getElementById(tableId);
+                    if (!table) return;
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        if (!q) { row.style.display = ''; return; }
+                        const text = row.innerText.toLowerCase();
+                        row.style.display = text.indexOf(q) !== -1 ? '' : 'none';
+                    });
+                }
+
+                // Generic filter by data attribute (e.g., role or module)
+                function adminFilter(tableId, attr, value) {
+                    const table = document.getElementById(tableId);
+                    if (!table) return;
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        if (!value) { row.style.display = ''; return; }
+                        const val = row.dataset[attr];
+                        row.style.display = (val == value) ? '' : 'none';
                     });
                 }
 

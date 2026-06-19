@@ -12,7 +12,7 @@
     --border: rgba(204, 0, 255, 0.2);
     --border2: rgba(0, 204, 255, 0.2);
     --text: #e0e0f0;
-    --text-muted: #7878aa;
+    --text-muted: #ffffff;
     --success: #00ff88;
     --error: #ff4466;
     --warning: #ffaa00;
@@ -403,7 +403,7 @@ strong { color: var(--primary); }
     box-shadow: 0 0 0 3px rgba(204, 0, 255, 0.1);
     background: rgba(255,255,255,0.07);
 }
-.form-input::placeholder { color: var(--text-muted); }
+.form-input::placeholder { color: #7878aa; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .form-actions { display: flex; gap: 1rem; align-items: center; margin-top: 1rem; }
 
@@ -723,7 +723,7 @@ strong { color: var(--primary); }
     outline: none;
     transition: all 0.2s;
 }
-.sidebar-search-input::placeholder { color: var(--text-muted); }
+.sidebar-search-input::placeholder { color: #7878aa; }
 .sidebar-search-input:focus {
     border-color: var(--primary);
     background: rgba(255,255,255,0.07);
@@ -1209,7 +1209,7 @@ strong { color: var(--primary); }
 }
 .admin-header, .mentor-header { margin-bottom: 2rem; }
 .page-title { font-size: 1.6rem; color: var(--primary); }
-.page-sub { color: var(--text-muted); font-size: 0.9rem; }
+.page-sub { color: white; font-size: 0.9rem; }
 
 .stats-grid {
     display: grid;
@@ -1800,6 +1800,39 @@ strong { color: var(--primary); }
 }
 .custom-select-item:hover { background: rgba(139,92,246,.15); color: var(--text); }
 .custom-select-item.selected { color: var(--primary); background: rgba(139,92,246,.1); }
+
+/* Native select styled to match custom-select-btn used in mentor/forum */
+.custom-select-native {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    padding: .55rem .9rem;
+    background: rgba(255,255,255,.05) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'><path fill='%23c7c7d6' d='M7 10l5 5 5-5z'/></svg>") no-repeat calc(100% - 12px) center/12px 12px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: .9rem;
+    cursor: pointer;
+}
+.custom-select-native:hover { border-color: var(--primary); background-color: rgba(255,255,255,.07); }
+
+
+/* Style native select dropdown options to match the dark theme */
+.custom-select-native option,
+.custom-select-native optgroup {
+    background: #1e1e32;
+    color: var(--text);
+}
+.custom-select-native option {
+    color: var(--text);
+    background: #1e1e32;
+}
+.custom-select-native:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(124,58,237,0.06);
+}
+
 
 /* Forum card */
 .forum-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 1rem 1.25rem; transition: border-color .2s; }

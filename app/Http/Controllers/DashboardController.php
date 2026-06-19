@@ -59,6 +59,25 @@ class DashboardController extends Controller
             ];
         });
 
+        // All-time leaderboard (total across all quizzes)
+        $rawTotal = QuizResult::select('user_id', DB::raw('SUM(score) as total_score'))
+            ->with('user')
+            ->groupBy('user_id')
+            ->orderByDesc('total_score')
+            ->take(10)
+            ->get();
+
+        $pos2 = 0;
+        $leaderboard_total = $rawTotal->map(function($item) use (&$pos2) {
+            $pos2++;
+            return (object) [
+                'user_id' => $item->user_id,
+                'username' => $item->user->username ?? '-',
+                'total_score' => $item->total_score,
+                'rank' => $pos2,
+            ];
+        });
+
         // Fetch unread notifications for current user (and mark as read)
         $notifications = UserNotification::where('user_id', $userId)
             ->whereNull('read_at')
@@ -74,7 +93,7 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'modules', 'totalModules', 'completedCount', 'doneIds',
-            'weekScore', 'leaderboard', 'notifications'
+            'weekScore', 'leaderboard', 'leaderboard_total', 'notifications'
         ));
     }
 }

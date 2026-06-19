@@ -743,7 +743,7 @@ strong {
   background: rgba(255,255,255,0.07);
 }
 .form-input::placeholder {
-  color: var(--text-muted);
+  color: #7878aa;
 }
 .form-row {
   display: grid;
@@ -1077,7 +1077,7 @@ strong {
   transition: all 0.2s;
 }
 .sidebar-search-input::placeholder {
-  color: var(--text-muted);
+  color: #7878aa;
 }
 .sidebar-search-input:focus {
   border-color: var(--primary);

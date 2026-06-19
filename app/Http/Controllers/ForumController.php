@@ -24,6 +24,11 @@ class ForumController extends Controller
         $query = DiscussionForum::with(['author', 'replies.user'])
             ->orderByDesc('created_at');
 
+        // Non-admin users should only see visible topics
+        if (!auth()->user() || auth()->user()->role !== 'admin') {
+            $query->where('visible', true);
+        }
+
         if (!empty($activeCats)) {
             $query->whereIn('category', $activeCats);
         }
@@ -122,9 +127,12 @@ class ForumController extends Controller
     {
         Gate::authorize('delete', $forum);
 
-        $forum->delete();
+        // Toggle visibility instead of hard delete
+        $forum->visible = !$forum->visible;
+        $forum->save();
 
-        return redirect()->route('forum')->with('success', 'Topik berhasil dihapus!');
+        $msg = $forum->visible ? 'Topik berhasil ditampilkan kembali!' : 'Topik berhasil disembunyikan!';
+        return redirect()->route('forum')->with('success', $msg);
     }
 
     public function editReply(ForumReply $reply)

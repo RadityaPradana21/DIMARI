@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DiscussionForum extends Model
 {
-    protected $fillable = ['title', 'content', 'author_id', 'category'];
+    protected $fillable = ['title', 'content', 'author_id', 'category', 'visible'];
 
     public function author()
     {
